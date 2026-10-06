@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Register for Summer 2027 | Monroe Cross Country Club</title>
+<meta name="description" content="Register for Monroe Cross Country Club, Summer 2027. June 14 – July 29, Mondays and Thursdays, 8–10 AM. $150 with T-shirt.">
+<meta name="theme-color" content="#082f49">
+<meta property="og:title" content="Register for Summer 2027 | Monroe Cross Country Club">
+<meta property="og:description" content="Register for Monroe Cross Country Club, Summer 2027. June 14 – July 29, Mondays and Thursdays, 8–10 AM. $150 with T-shirt.">
+<meta property="og:type" content="website">
+<!-- TODO: add og:image and canonical URL once the production domain and a share image exist. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23082f49'/%3E%3Ctext x='32' y='45' font-family='Arial Narrow,Impact,sans-serif' font-weight='900' font-size='36' text-anchor='middle' fill='%232f8bff'%3EXC%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header" id="top">
+  <div class="container site-header__inner">
+    <!-- TODO: temporary type-based wordmark. Replace when a final club logo exists. -->
+    <a class="wordmark" href="index.html" aria-label="Monroe Cross Country Club, home">
+      <span class="wordmark__main">Monroe <b>XC</b></span>
+      <span class="wordmark__sub">Cross Country Club</span>
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="index.html">Home</a>
+      <a href="program.html">Program</a>
+      <a href="coach-todd.html">Coach Todd</a>
+      <a href="in-action.html">In Action</a>
+      <a href="faq.html">FAQ</a>
+      <a class="btn btn--primary" href="register.html" aria-current="page">Register</a>
+    </nav>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+<div class="mobile-menu" id="mobile-menu">
+  <nav aria-label="Mobile">
+    <ul>
+      <li><a href="index.html">Home<small>01</small></a></li>
+      <li><a href="program.html">Program<small>02</small></a></li>
+      <li><a href="coach-todd.html">Coach Todd<small>03</small></a></li>
+      <li><a href="in-action.html">In Action<small>04</small></a></li>
+      <li><a href="faq.html">FAQ<small>05</small></a></li>
+    </ul>
+  </nav>
+  <a class="btn btn--primary btn--lg" href="register.html">Register for Summer 2027 <span class="arr" aria-hidden="true">→</span></a>
+  <p class="mobile-menu__foot">Monroe, Michigan · Led by Coach Todd Williams</p>
+</div>
+<main id="main">
+<section class="page-hero dark dark--deep grain glow">
+  <svg class="hero__course" viewBox="0 0 1440 600" preserveAspectRatio="none" aria-hidden="true"><path class="c1" d="M-20 520 C 260 560, 420 300, 700 340 S 1100 560, 1470 180"/><path class="c2" d="M-20 550 C 280 590, 440 330, 720 370 S 1120 590, 1470 220"/></svg>
+  <div class="container">
+    <span class="eyebrow">Summer 2027</span>
+    <h1 class="display">Ready<br><span class="accent">to run?</span></h1>
+    <p class="lead">5th–12th grade. All schools. All levels. Tell us about your athlete.</p>
+  </div>
+</section>
+<section class="section on-light">
+  <div class="container">
+    <div class="reg-split">
+      <!-- TODO: Connect final PayPal / registration flow. This form is front-end structure only; it does not submit anywhere.
+           TODO: Waiver platform is not set up. Do not add waiver language until approved. -->
+      <form class="form" id="reg-form" novalidate>
+        <div class="form-row form-row--2">
+          <div class="field"><label for="a-first">Athlete first name</label><input id="a-first" name="athlete_first" autocomplete="off" required></div>
+          <div class="field"><label for="a-last">Athlete last name</label><input id="a-last" name="athlete_last" autocomplete="off" required></div>
+        </div>
+        <div class="form-row form-row--2">
+          <div class="field"><label for="a-grade">Grade (Summer 2027)</label>
+            <select id="a-grade" name="grade" required><option value="">Select grade</option><option>5th</option><option>6th</option><option>7th</option><option>8th</option><option>9th</option><option>10th</option><option>11th</option><option>12th</option></select></div>
+          <div class="field"><label for="a-school">School (or “Homeschool”)</label><input id="a-school" name="school" autocomplete="off" required></div>
+        </div>
+        <div class="field">
+          <fieldset><legend>Running experience</legend>
+            <label class="radio"><input type="radio" name="level" value="new" required><span><b>New to running</b>Little or no organized running</span></label>
+            <label class="radio"><input type="radio" name="level" value="some"><span><b>Some experience</b>Has run on a team or trained before</span></label>
+            <label class="radio"><input type="radio" name="level" value="experienced"><span><b>Experienced</b>Competes regularly in cross country or track</span></label>
+          </fieldset>
+        </div>
+        <div class="form-row form-row--2">
+          <div class="field"><label for="p-name">Parent / guardian name</label><input id="p-name" name="parent" autocomplete="name" required></div>
+          <div class="field"><label for="p-email">Parent / guardian email</label><input id="p-email" name="email" type="email" autocomplete="email" required></div>
+        </div>
+        <div class="field"><label for="a-notes">Anything Coach Todd should know? (optional)</label><textarea id="a-notes" name="notes" rows="4"></textarea></div>
+        <div id="form-status" class="form-status" role="status" tabindex="-1" hidden></div>
+        <button class="btn btn--dark btn--lg" type="submit">Continue to registration <span class="arr" aria-hidden="true">→</span></button>
+        <!-- TODO (MUST REMOVE before launch): this preview notice, and the submit handler in assets/js/main.js, must be replaced once the real registration / PayPal workflow is connected. -->
+        <p class="todo-note">Preview: online registration and PayPal checkout are not connected yet. Nothing on this form is sent or charged.</p>
+      </form>
+      <aside class="summary-card" aria-label="Summer 2027 summary">
+        <p class="eyebrow" style="color:var(--accent)">Summer 2027</p>
+        <p class="display" style="font-size:5.5rem;line-height:.8">$150</p>
+        <p>MCCC T-shirt included</p>
+        <dl class="ticket" style="background:none;box-shadow:none;padding:0;color:#fff"><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Season</dt><dd>June 14 – July 29</dd></div><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Days</dt><dd>Mon + Thu</dd></div><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Time</dt><dd>8:00 – 10:00 AM</dd></div><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Who</dt><dd>5th–12th, all schools</dd></div></dl>
+        <p style="font-size:.9rem;color:#b7c4cf">Questions? <a href="mailto:MonroeJiuJitsu11@gmail.com">MonroeJiuJitsu11@gmail.com</a></p>
+      </aside>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <div class="site-footer__grid">
+      <div>
+        <p class="wordmark__main display" style="font-size:2.6rem;color:#fff;max-width:none">Monroe <span class="accent">XC</span></p>
+        <p style="margin-top:.75rem">Monroe Cross Country Club. A summer distance-running club for 5th–12th grade athletes from every school, led by Coach Todd Williams.</p>
+      </div>
+      <div>
+        <h2>Explore</h2>
+        <ul><li><a href="index.html">Home</a></li><li><a href="program.html">Program</a></li><li><a href="coach-todd.html">Coach Todd</a></li><li><a href="in-action.html">In Action</a></li><li><a href="faq.html">FAQ</a></li><li><a href="register.html">Register</a></li></ul>
+      </div>
+      <div>
+        <h2>Summer 2027</h2>
+        <ul><li>June 14 – July 29</li><li>Mondays + Thursdays</li><li>8:00 – 10:00 AM</li><li>$150, T-shirt included</li></ul>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <ul><li><a href="mailto:MonroeJiuJitsu11@gmail.com">MonroeJiuJitsu11@gmail.com</a></li><li>Monroe, Michigan</li></ul>
+        <!-- TODO: social links. None supplied, so none shown. -->
+      </div>
+    </div>
+    <div class="site-footer__legal">
+      <span>© <span id="year">2027</span> Monroe Cross Country Club</span>
+      <span>Every mile matters.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/main.js" defer></script>
+</body>
+</html>

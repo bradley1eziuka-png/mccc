@@ -1,0 +1,13 @@
+.DS_Store
+temporary screenshots/
+# local tooling / skills, not part of the site
+Agent-Skills-for-Context-Engineering-main/
+marketingskills-main/
+stop-slop-main/
+ui-ux-pro-max-skill-main/
+Frontend design skill.md
+CLAUDE.md
+# raw client originals (web-optimized versions live in assets/media)
+Pictures/
+5400.mp4
+5404.mp4
