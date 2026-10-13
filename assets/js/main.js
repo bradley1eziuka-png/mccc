@@ -115,6 +115,25 @@
     v.addEventListener("ended", () => { box.classList.remove("is-playing"); v.controls = false; v.currentTime = 0; });
   });
 
+
+  /* testimonials: full text always in the DOM; CSS clamps it, the button reveals the rest */
+  const tcards = document.querySelectorAll(".tcard");
+  const fitCards = () => tcards.forEach((card) => {
+    const text = card.querySelector(".tcard__text");
+    const btn = card.querySelector(".tcard__toggle");
+    if (card.classList.contains("is-open")) return;
+    btn.hidden = text.scrollHeight <= text.clientHeight + 1;
+  });
+  tcards.forEach((card) => {
+    const btn = card.querySelector(".tcard__toggle");
+    btn.addEventListener("click", () => {
+      const open = card.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", String(open));
+      btn.textContent = open ? "Show less" : "Read full testimonial";
+    });
+  });
+  if (tcards.length) { fitCards(); window.addEventListener("resize", fitCards); window.addEventListener("load", () => { fitCards(); setTimeout(fitCards, 800); }); if (document.fonts) document.fonts.ready.then(fitCards); }
+
   /* gallery filters */
   const filterBtns = document.querySelectorAll(".filters button");
   if (filterBtns.length) {
@@ -133,6 +152,9 @@
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       if (!form.checkValidity()) { form.reportValidity(); return; }
+      // Registration data to send once the real backend exists (includes athlete T-shirt size as tshirt_size):
+      const registration = Object.fromEntries(new FormData(form)); // eslint-disable-line no-unused-vars
+      // MUST REMOVE with the preview notice below once registration + PayPal are live.
       // TODO: Connect final PayPal / registration flow here. Collect the fields below,
       // then hand off to the approved checkout. Do not invent a checkout URL.
       status.hidden = false;
