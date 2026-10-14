@@ -843,3 +843,9 @@ body.has-sticky .site-footer { padding-bottom: 6rem; }
 .tcard__toggle:active { transform: translateX(0) scale(0.98); }
 .tcard__by { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: 1.5rem; letter-spacing: 0.01em; line-height: 1; padding-top: 1rem; border-top: 1px solid var(--line-dark); }
 .tcard__by::before { content: ""; display: inline-block; width: 1.5rem; height: 2px; background: var(--accent); vertical-align: middle; margin-right: 0.75rem; }
+
+/* odd fifth testimonial: spans the full row on desktop so the grid stays balanced */
+@media (min-width: 900px) {
+  .voices__grid .tcard:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .voices__grid .tcard:last-child:nth-child(odd) .tcard__text { max-width: 80ch; }
+}
