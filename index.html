@@ -212,6 +212,7 @@
       <span class="eyebrow">Parents</span>
       <h2 id="voices-title" class="display">What parents are saying</h2>
     </div>
+    <div class="voices__viewport" role="region" aria-label="Parent testimonials">
     <div class="voices__grid">
       <figure class="tcard reveal" style="--d:0">
         <blockquote class="tcard__quote"><p class="tcard__text" id="t1">This season has been fantastic for our son August. Yes, he’s dropped time, but the bigger change is who he’s becoming as a runner. Coach Williams has built a culture where kids believe in themselves, compete hard, and hold each other accountable, and August has bought in completely. He has a new fire and motivation, and he’s genuinely excited to go to practice and to meets. Coach isn’t just making these kids faster; he’s shaping their mindset, and that will carry well beyond the course. Thank you, Coach!</p></blockquote>
@@ -238,6 +239,13 @@
         <button class="tcard__toggle" type="button" aria-expanded="false" aria-controls="t5" hidden>Read full testimonial</button>
         <figcaption class="tcard__by">Katie</figcaption>
       </figure>
+    </div>
+    </div>
+    <!-- Mobile-only carousel controls (shown at max-width 760px by CSS/JS). Desktop and tablet keep the static grid. -->
+    <div class="voices__controls" role="group" aria-label="Testimonial navigation">
+      <button class="vc-btn vc-prev" type="button" aria-label="Previous testimonial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="vc-mid"><span class="vc-count" aria-live="off">1 / 5</span><button class="vc-pause" type="button" aria-label="Pause automatic rotation"><span class="vc-icon" aria-hidden="true"></span></button></div>
+      <button class="vc-btn vc-next" type="button" aria-label="Next testimonial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     </div>
   </div>
 </section>

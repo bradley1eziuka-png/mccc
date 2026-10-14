@@ -134,6 +134,73 @@
   });
   if (tcards.length) { fitCards(); window.addEventListener("resize", fitCards); window.addEventListener("load", () => { fitCards(); setTimeout(fitCards, 800); }); if (document.fonts) document.fonts.ready.then(fitCards); }
 
+
+  /* testimonials carousel: phones only (max-width 760px). One card at a time, auto-advances, arrows + pause + swipe. */
+  const voices = document.querySelector(".voices");
+  if (voices) {
+    const DWELL = 2500; // ms each card stays before sliding to the next
+    const track = voices.querySelector(".voices__grid");
+    const cards = [...track.children];
+    const viewport = voices.querySelector(".voices__viewport");
+    const count = voices.querySelector(".vc-count");
+    const pauseBtn = voices.querySelector(".vc-pause");
+    const mq = window.matchMedia("(max-width: 760px)");
+    let i = 0, timer = null, playing = !reduce, onScreen = true, active = false;
+    const anyOpen = () => cards.some((c) => c.classList.contains("is-open"));
+    const stop = () => { clearInterval(timer); timer = null; };
+    const start = () => { stop(); if (active && playing && onScreen && !anyOpen()) timer = setInterval(() => go(i + 1), DWELL); };
+    const collapseAll = () => cards.forEach((c) => {
+      if (!c.classList.contains("is-open")) return;
+      c.classList.remove("is-open");
+      const b = c.querySelector(".tcard__toggle");
+      b.setAttribute("aria-expanded", "false"); b.textContent = "Read full testimonial";
+    });
+    const go = (n) => {
+      collapseAll();
+      i = (n + cards.length) % cards.length;
+      track.style.setProperty("--i", i);
+      cards.forEach((c, k) => { c.inert = k !== i; c.setAttribute("aria-hidden", k === i ? "false" : "true"); });
+      count.textContent = (i + 1) + " / " + cards.length;
+      fitCards();
+    };
+    const paintPause = () => {
+      pauseBtn.dataset.paused = String(!playing);
+      pauseBtn.setAttribute("aria-label", playing ? "Pause automatic rotation" : "Start automatic rotation");
+      track.setAttribute("aria-live", playing ? "off" : "polite");
+    };
+    const activate = () => {
+      active = true; voices.classList.add("voices--carousel");
+      cards.forEach((c, k) => { c.setAttribute("role", "group"); c.setAttribute("aria-roledescription", "slide"); c.setAttribute("aria-label", (k + 1) + " of " + cards.length); });
+      viewport.setAttribute("aria-roledescription", "carousel");
+      paintPause(); go(i); start();
+    };
+    const deactivate = () => {
+      active = false; stop(); voices.classList.remove("voices--carousel");
+      track.style.removeProperty("--i"); track.removeAttribute("aria-live");
+      viewport.removeAttribute("aria-roledescription");
+      cards.forEach((c) => { c.inert = false; ["aria-hidden", "role", "aria-roledescription", "aria-label"].forEach((a) => c.removeAttribute(a)); });
+      fitCards();
+    };
+    voices.querySelector(".vc-prev").addEventListener("click", () => { go(i - 1); start(); });
+    voices.querySelector(".vc-next").addEventListener("click", () => { go(i + 1); start(); });
+    pauseBtn.addEventListener("click", () => { playing = !playing; paintPause(); start(); });
+    // expanding a card holds the carousel on it; collapsing resumes
+    voices.addEventListener("click", (e) => { if (e.target.closest(".tcard__toggle")) setTimeout(start, 0); });
+    // swipe
+    let x0 = null;
+    viewport.addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; stop(); }, { passive: true });
+    viewport.addEventListener("touchend", (e) => {
+      if (x0 !== null) { const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) go(i + (dx < 0 ? 1 : -1)); }
+      x0 = null; start();
+    });
+    voices.addEventListener("focusin", stop);
+    voices.addEventListener("focusout", start);
+    if ("IntersectionObserver" in window) new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; start(); }, { threshold: 0.3 }).observe(voices);
+    const sync = () => (mq.matches ? activate() : deactivate());
+    mq.addEventListener("change", sync);
+    sync();
+  }
+
   /* gallery filters */
   const filterBtns = document.querySelectorAll(".filters button");
   if (filterBtns.length) {

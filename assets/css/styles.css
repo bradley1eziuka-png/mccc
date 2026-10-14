@@ -849,3 +849,26 @@ body.has-sticky .site-footer { padding-bottom: 6rem; }
   .voices__grid .tcard:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .voices__grid .tcard:last-child:nth-child(odd) .tcard__text { max-width: 80ch; }
 }
+
+/* ==========================================================================
+   Testimonials carousel — PHONES ONLY (max-width 760px). Desktop/tablet keep the grid.
+   ========================================================================== */
+.voices__controls { display: none; }
+@media (max-width: 760px) {
+  .voices--carousel .voices__viewport { overflow: hidden; padding-block: 4px 16px; margin-block: -4px -16px; touch-action: pan-y; }
+  .voices--carousel .voices__grid { display: flex; gap: 12px; align-items: stretch; transform: translateX(calc(var(--i, 0) * (-100% - 12px))); transition: transform 600ms var(--ease); will-change: transform; }
+  .voices--carousel .tcard { flex: 0 0 100%; min-width: 0; display: flex; flex-direction: column; }
+  .voices--carousel .tcard__by { margin-top: auto; }
+  .voices--carousel .tcard__toggle { align-self: flex-start; }
+  .js .voices--carousel .tcard.reveal { opacity: 1; transform: none; }
+  .voices--carousel .voices__controls { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.25rem; }
+  .vc-mid { display: flex; align-items: center; gap: 0.75rem; }
+  .vc-count { font-family: var(--font-display); font-weight: 700; font-size: 1.375rem; letter-spacing: 0.06em; min-width: 3.5ch; text-align: center; }
+  .vc-btn, .vc-pause { display: grid; place-items: center; width: 52px; height: 52px; background: transparent; border: 1px solid var(--line-dark); border-radius: var(--r-sm); color: var(--white); padding: 0; transition: transform var(--t-fast) var(--ease); }
+  .vc-btn { border-color: var(--accent); background: var(--accent); }
+  .vc-btn svg { width: 24px; height: 24px; }
+  .vc-btn:active, .vc-pause:active { transform: scale(0.94); }
+  .vc-pause { width: 44px; height: 44px; }
+  .vc-icon { width: 14px; height: 16px; border-left: 4px solid currentColor; border-right: 4px solid currentColor; }
+  .vc-pause[data-paused="true"] .vc-icon { width: 0; height: 0; border: 0; border-left: 14px solid currentColor; border-top: 9px solid transparent; border-bottom: 9px solid transparent; margin-left: 3px; }
+}
