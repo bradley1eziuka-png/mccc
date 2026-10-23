@@ -1,4 +1,4 @@
-/* Monroe XC — interactions. No dependencies. */
+/* Monroe Run Club — interactions. No dependencies. */
 (() => {
   const root = document.documentElement;
   root.classList.add("js");
