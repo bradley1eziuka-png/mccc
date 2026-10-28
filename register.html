@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Register for Summer 2027 | Monroe Run Club</title>
-<meta name="description" content="Register for Monroe Run Club, Summer 2027. June 14 – July 29, Mondays and Thursdays, 8–10 AM. $200 with T-shirt.">
+<title>Register for Summer 2027 | Monroe It’s Time To Run</title>
+<meta name="description" content="Register for Monroe It’s Time to Run Club, Summer 2027. June 14 – July 29, Mondays and Thursdays, 8–10 AM. $200 with T-shirt.">
 <meta name="theme-color" content="#000000">
-<meta property="og:title" content="Register for Summer 2027 | Monroe Run Club">
-<meta property="og:description" content="Register for Monroe Run Club, Summer 2027. June 14 – July 29, Mondays and Thursdays, 8–10 AM. $200 with T-shirt.">
+<meta property="og:title" content="Register for Summer 2027 | Monroe It’s Time To Run">
+<meta property="og:description" content="Register for Monroe It’s Time to Run Club, Summer 2027. June 14 – July 29, Mondays and Thursdays, 8–10 AM. $200 with T-shirt.">
 <meta property="og:type" content="website">
 <!-- TODO: add og:image and canonical URL once the production domain and a share image exist. -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23000000'/%3E%3Ctext x='32' y='45' font-family='Arial Narrow,Impact,sans-serif' font-weight='900' font-size='26' text-anchor='middle' fill='%23ed2028'%3EXC%3C/text%3E%3C/svg%3E">
@@ -21,8 +21,9 @@
 <header class="site-header" id="top">
   <div class="container site-header__inner">
     <!-- TODO: temporary type-based wordmark. Replace when a final club logo exists. -->
-    <a class="wordmark" href="index.html" aria-label="Monroe Run Club, home">
-      <span class="wordmark__main">Monroe <b>Run</b> Club</span>
+    <a class="wordmark" href="index.html" aria-label="Monroe It’s Time To Run, home">
+      <span class="wordmark__top">Monroe</span>
+      <span class="wordmark__main">It’s Time To <b>Run</b></span>
     </a>
     <nav class="nav" aria-label="Primary">
       <a href="index.html">Home</a>
@@ -57,52 +58,139 @@
     <p class="lead">Entering 5th–12th grade. All schools. All levels. Tell us about your athlete.</p>
   </div>
 </section>
-<section class="section on-light">
+<section class="section on-light" id="register-form">
   <div class="container">
     <div class="reg-split">
-      <!-- TODO: Connect final PayPal / registration flow. This form is front-end structure only; it does not submit anywhere.
-           TODO: Waiver platform is not set up. Do not add waiver language until approved. -->
+      <!-- REGISTRATION FLOW (see REGISTRATION-SETUP.md)
+           Steps: 1 Athlete -> 2 Parent + emergency -> 3 Waiver + e-signature -> 4 Review -> save (POST /api/register) -> PayPal.
+           The form is OFF by default: window.SITE_CONFIG.registrationOpen in assets/js/config.js is false, and /api/register also
+           refuses (503) until the encrypted storage env vars exist. Flip registrationOpen to true ONLY after storage is configured,
+           the waiver has had legal review, and a test registration has been verified. -->
       <div class="reg-main">
       <div class="where"><small>Where we meet</small><b>Munson Park — back left soccer field (look for the Monroe Flag)</b></div>
-      <form class="form" id="reg-form" novalidate>
-        <div class="form-row form-row--2">
-          <div class="field"><label for="a-first">Athlete first name</label><input id="a-first" name="athlete_first" autocomplete="off" required></div>
-          <div class="field"><label for="a-last">Athlete last name</label><input id="a-last" name="athlete_last" autocomplete="off" required></div>
+      <div class="reg-notice" id="reg-notice" role="status"><b>Online registration is not open yet.</b> You can look through the steps below, but nothing you enter is sent or saved, and no payment is requested.</div>
+      <ol class="rprog" aria-label="Registration steps">
+        <li class="is-current" aria-current="step"><span class="rprog__n">1</span><span class="rprog__t">Athlete</span></li>
+        <li><span class="rprog__n">2</span><span class="rprog__t">Parent &amp; emergency</span></li>
+        <li><span class="rprog__n">3</span><span class="rprog__t">Waiver &amp; signature</span></li>
+        <li><span class="rprog__n">4</span><span class="rprog__t">Review &amp; pay</span></li>
+      </ol>
+      <form class="form" id="reg-form" novalidate autocomplete="off">
+        <div class="hp" aria-hidden="true"><label>Leave this field empty<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+        <fieldset class="rstep" data-step="1">
+          <legend class="rstep__title">Athlete information</legend>
+          <div class="form-row form-row--2">
+            <div class="field"><label for="a-first">Athlete first name</label><input id="a-first" name="athlete_first" required maxlength="60"></div>
+            <div class="field"><label for="a-last">Athlete last name</label><input id="a-last" name="athlete_last" required maxlength="60"></div>
+          </div>
+          <div class="form-row form-row--2">
+            <div class="field"><label for="a-dob">Athlete date of birth</label><input id="a-dob" name="dob" type="date" required min="2000-01-01"></div>
+            <div class="field"><label for="a-grade">Grade entering (2027–28 school year)</label>
+              <select id="a-grade" name="grade" required><option value="">Select grade entering</option><option>5th</option><option>6th</option><option>7th</option><option>8th</option><option>9th</option><option>10th</option><option>11th</option><option>12th</option></select></div>
+          </div>
+          <div class="form-row form-row--2">
+            <div class="field"><label for="a-school">School (or “Homeschool”)</label><input id="a-school" name="school" required maxlength="100"></div>
+            <!-- TODO (Todd must confirm before launch): the T-shirt size list is PROVISIONAL. Replace with the sizes actually ordered. -->
+            <div class="field"><label for="a-shirt">Athlete T-shirt size</label>
+              <select id="a-shirt" name="tshirt_size" required><option value="">Select size</option><option>Youth S</option><option>Youth M</option><option>Youth L</option><option>Adult S</option><option>Adult M</option><option>Adult L</option><option>Adult XL</option><option>Adult XXL</option></select></div>
+          </div>
+          <div class="field">
+            <fieldset><legend>Running experience</legend>
+              <label class="radio"><input type="radio" name="level" value="new" required><span><b>New to running</b>Little or no organized running</span></label>
+              <label class="radio"><input type="radio" name="level" value="some"><span><b>Some experience</b>Has run on a team or trained before</span></label>
+              <label class="radio"><input type="radio" name="level" value="experienced"><span><b>Experienced</b>Competes regularly in cross country or track</span></label>
+            </fieldset>
+          </div>
+        </fieldset>
+
+        <fieldset class="rstep" data-step="2">
+          <legend class="rstep__title">Parent / legal guardian &amp; emergency information</legend>
+          <div class="field"><label for="p-name">Parent / legal guardian full name</label><input id="p-name" name="parent" autocomplete="name" required maxlength="100"></div>
+          <div class="form-row form-row--2">
+            <div class="field"><label for="p-email">Parent / guardian email</label><input id="p-email" name="email" type="email" autocomplete="email" required maxlength="160"></div>
+            <div class="field"><label for="p-phone">Parent / guardian phone</label><input id="p-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="30" data-phone></div>
+          </div>
+          <div class="form-row form-row--2">
+            <div class="field"><label for="e-name">Emergency contact name</label><input id="e-name" name="emergency_name" required maxlength="100"></div>
+            <div class="field"><label for="e-phone">Emergency contact phone</label><input id="e-phone" name="emergency_phone" type="tel" inputmode="tel" required maxlength="30" data-phone></div>
+          </div>
+          <div class="field"><label for="e-med">Relevant medical restrictions / emergency information</label>
+            <textarea id="e-med" name="medical" rows="4" required maxlength="1500"></textarea>
+            <small class="field__hint">Enter “None” if there is nothing to report.</small></div>
+        </fieldset>
+
+        <fieldset class="rstep" data-step="3">
+          <legend class="rstep__title">Liability waiver &amp; signature</legend>
+          <p class="rstep__lead">Read the full waiver below. Your information from the previous steps appears in it.</p>
+<div class="waiver" data-waiver-version="2026-10-v1">
+  <h3 class="waiver__title" data-wp>MONROE IT’S TIME TO RUN CLUB WAIVER</h3>
+  <p class="waiver__sub" data-wp>MINOR PARTICIPANT AGREEMENT • ACKNOWLEDGMENT OF RISKS • PARENT/GUARDIAN CONSENT</p>
+  <h4 class="waiver__h" data-wp>1. Activities and risks</h4>
+  <p class="waiver__p" data-wp>I understand my child may participate in running, conditioning, hills, drills, stretching and related club activities at tracks, parks, roads, trails and other locations. Risks include falls, uneven terrain, traffic, collisions, weather, heat or cold illness, dehydration, overexertion, sprains, fractures, cardiac events, serious injury and, rarely, death. Not all risks can be eliminated.</p>
+  <h4 class="waiver__h" data-wp>2. Consent, health and safety</h4>
+  <p class="waiver__p" data-wp>I consent to my child’s voluntary participation. To the best of my knowledge, my child can participate safely subject to restrictions I disclose to the club. I will communicate relevant medical concerns and emergency information. My child will follow safety instructions, stop activity for concerning symptoms and report injury or illness. I understand this is not a physician’s medical clearance.</p>
+  <h4 class="waiver__h" data-wp>3. Parent/guardian release and limits</h4>
+  <p class="waiver__p" data-wp>To the extent permitted by Michigan law, I release Coach Todd Williams, Monroe It’s Time to Run Club, and its staff and volunteers from claims that I personally may lawfully release arising from my child’s participation, including claims based on ordinary negligence to the extent such release is lawful. I understand that signing does not waive my child’s independent legal claims where Michigan law does not allow a parent to do so. This agreement does not release claims that cannot legally be waived.</p>
+  <h4 class="waiver__h" data-wp>4. Emergency assistance</h4>
+  <p class="waiver__p" data-wp>I authorize club staff to call 911 and seek emergency medical assistance for my child when reasonably necessary, including if I cannot be reached. I understand I may be responsible for resulting medical costs as provided by law. Club staff are not required to provide medical treatment.</p>
+  <h4 class="waiver__h" data-wp>5. Scope</h4>
+  <p class="waiver__p" data-wp>This agreement applies to Monroe It’s Time to Run Club activities during the program. If any provision is unenforceable, the remainder will apply to the extent allowed by law. Michigan law governs this agreement.</p>
+  <h4 class="waiver__h waiver__h--info" data-wp>PARTICIPANT &amp; PARENT/GUARDIAN INFORMATION</h4>
+  <dl class="waiver__info">
+    <div><dt data-wp>Child’s full name</dt><dd data-fill="athlete_name"></dd></div>
+    <div><dt data-wp>Child’s date of birth</dt><dd data-fill="dob"></dd></div>
+    <div><dt data-wp>Parent/legal guardian full name</dt><dd data-fill="parent"></dd></div>
+    <div><dt data-wp>Parent/guardian phone</dt><dd data-fill="phone"></dd></div>
+    <div><dt data-wp>Parent/guardian email</dt><dd data-fill="email"></dd></div>
+    <div><dt data-wp>Emergency contact name &amp; phone</dt><dd data-fill="emergency"></dd></div>
+    <div><dt data-wp>Relevant medical restrictions / emergency information</dt><dd data-fill="medical"></dd></div>
+  </dl>
+</div>
+          <label class="check"><input type="checkbox" name="agree" id="agree" required><span data-wp>By signing, I confirm that I am the participant’s parent/legal guardian, have read and understand this agreement, and voluntarily consent to my child’s participation.</span></label>
+          <div class="sig">
+            <div class="field"><label for="sig-typed" data-wp>Parent/legal guardian signature:</label>
+              <input id="sig-typed" name="signature_typed" autocomplete="off" required maxlength="100" placeholder="Type your full legal name">
+              <small class="field__hint">Type your full name exactly as entered above. Typing it is your electronic signature.</small></div>
+            <div class="field"><label for="sig-date" data-wp>Date:</label><input id="sig-date" name="signed_date_display" readonly></div>
+            <div class="field sig__draw"><span class="sig__label" id="sig-draw-label">Optional: also draw your signature</span>
+              <canvas id="sig-canvas" width="600" height="180" role="img" aria-labelledby="sig-draw-label"></canvas>
+              <button type="button" class="sig__clear" id="sig-clear">Clear drawing</button></div>
+          </div>
+        </fieldset>
+
+        <fieldset class="rstep" data-step="4">
+          <legend class="rstep__title">Review &amp; payment</legend>
+          <dl class="review" id="review"></dl>
+          <div class="pay-explain">
+            <b>Payment is required to complete registration.</b>
+            <p>When you continue, your registration and signed waiver are saved, then you go to the $200 PayPal checkout. A registration is only confirmed after the payment is received and checked.</p>
+          </div>
+        </fieldset>
+
+        <div id="form-status" class="form-status" role="alert" tabindex="-1" hidden></div>
+        <div class="rnav">
+          <button type="button" class="btn btn--ghost-dark" data-back hidden>Back</button>
+          <button type="button" class="btn btn--dark" data-next>Next <span class="arr" aria-hidden="true">→</span></button>
+          <button type="submit" class="btn btn--primary" data-submit hidden>Save registration &amp; continue to PayPal <span class="arr" aria-hidden="true">→</span></button>
         </div>
-        <div class="form-row form-row--2">
-          <div class="field"><label for="a-grade">Grade entering (2027–28 school year)</label>
-            <select id="a-grade" name="grade" required><option value="">Select grade entering</option><option>5th</option><option>6th</option><option>7th</option><option>8th</option><option>9th</option><option>10th</option><option>11th</option><option>12th</option></select></div>
-          <div class="field"><label for="a-school">School (or “Homeschool”)</label><input id="a-school" name="school" autocomplete="off" required></div>
-        </div>
-        <!-- TODO (Todd must confirm before launch): the T-shirt size list below is PROVISIONAL. Replace with the sizes actually ordered. -->
-        <div class="form-row form-row--2">
-          <div class="field"><label for="a-shirt">Athlete T-shirt size</label>
-            <select id="a-shirt" name="tshirt_size" required><option value="">Select size</option><option>Youth S</option><option>Youth M</option><option>Youth L</option><option>Adult S</option><option>Adult M</option><option>Adult L</option><option>Adult XL</option><option>Adult XXL</option></select></div>
-        </div>
-        <div class="field">
-          <fieldset><legend>Running experience</legend>
-            <label class="radio"><input type="radio" name="level" value="new" required><span><b>New to running</b>Little or no organized running</span></label>
-            <label class="radio"><input type="radio" name="level" value="some"><span><b>Some experience</b>Has run on a team or trained before</span></label>
-            <label class="radio"><input type="radio" name="level" value="experienced"><span><b>Experienced</b>Competes regularly in cross country or track</span></label>
-          </fieldset>
-        </div>
-        <div class="form-row form-row--2">
-          <div class="field"><label for="p-name">Parent / guardian name</label><input id="p-name" name="parent" autocomplete="name" required></div>
-          <div class="field"><label for="p-email">Parent / guardian email</label><input id="p-email" name="email" type="email" autocomplete="email" required></div>
-        </div>
-        <div class="field"><label for="a-notes">Anything Coach Todd should know? (optional)</label><textarea id="a-notes" name="notes" rows="4"></textarea></div>
-        <div id="form-status" class="form-status" role="status" tabindex="-1" hidden></div>
-        <button class="btn btn--dark btn--lg" type="submit">Continue to registration <span class="arr" aria-hidden="true">→</span></button>
-        <!-- TODO (MUST REMOVE before launch): this preview notice, and the submit handler in assets/js/main.js, must be replaced once the real registration / PayPal workflow is connected. -->
-        <p class="todo-note">Preview: online registration and PayPal checkout are not connected yet. Nothing on this form is sent or charged.</p>
       </form>
+
+      <div class="pay-panel" id="pay-panel" hidden tabindex="-1" aria-live="polite">
+        <p class="eyebrow">Registration saved</p>
+        <h3 class="display">One more step: payment</h3>
+        <p>Your reference: <b class="pay-ref" id="pay-ref"></b></p>
+        <p><b>Your registration is not complete until your $200 payment is made and confirmed.</b> Use the same email address you registered with when you pay (<span id="pay-email"></span>), and include your reference if PayPal gives you a place for a note.</p>
+        <a class="btn btn--primary btn--lg" id="pay-link" href="#" target="_blank" rel="noopener noreferrer">Pay $200 with PayPal <span class="arr" aria-hidden="true">→</span></a>
+        <p class="pay-fine">Paying does not confirm your spot automatically. Todd checks payments against registrations and your registration is marked paid after that. Questions? <a href="mailto:MonroeJiuJitsu11@gmail.com">MonroeJiuJitsu11@gmail.com</a></p>
+      </div>
       </div>
       <aside class="summary-card" aria-label="Summer 2027 summary">
         <p class="eyebrow" style="color:var(--accent)">Summer 2027</p>
         <p class="display" style="font-size:5.5rem;line-height:.8">$200</p>
         <p>Club T-shirt included</p>
         <p class="ticket__value ticket__value--dark"><b>Less than $15 per scheduled session</b> to learn and train with a two-time Olympian.<small>Based on the 14 scheduled sessions, June 14 – July 29.</small></p>
-        <dl class="ticket" style="background:none;box-shadow:none;padding:0;color:#fff"><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Season</dt><dd>June 14 – July 29</dd></div><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Days</dt><dd>Mon + Thu</dd></div><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Time</dt><dd>8:00 – 10:00 AM</dd></div><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Who</dt><dd>Entering 5th–12th, all schools</dd></div><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Where</dt><dd>Munson Park — back left soccer field (look for the Monroe Flag)</dd></div></dl>
+        <dl class="ticket" style="background:none;box-shadow:none;padding:0;color:#fff"><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Program</dt><dd>Monroe It’s Time to Run Club</dd></div><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Season</dt><dd>June 14 – July 29</dd></div><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Days</dt><dd>Mon + Thu</dd></div><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Time</dt><dd>8:00 – 10:00 AM</dd></div><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Who</dt><dd>Entering 5th–12th, all schools</dd></div><div style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;padding:.6rem 0;border-top:1px solid var(--line-dark)"><dt style="color:var(--accent)">Where</dt><dd>Munson Park — back left soccer field (look for the Monroe Flag)</dd></div></dl>
         <p style="font-size:.9rem;color:#b7c4cf">Questions? <a href="mailto:MonroeJiuJitsu11@gmail.com">MonroeJiuJitsu11@gmail.com</a></p>
       </aside>
     </div>
@@ -113,8 +201,8 @@
   <div class="container">
     <div class="site-footer__grid">
       <div>
-        <p class="wordmark__main display" style="font-size:2.6rem;color:#fff;max-width:none">Monroe <span class="accent">Run</span> Club</p>
-        <p style="margin-top:.75rem">Monroe Run Club. A summer distance-running club for athletes entering 5th–12th grade from every school, led by Coach Todd Williams.</p>
+        <p class="wordmark__main display" style="font-size:2.6rem;color:#fff;max-width:none">Monroe It’s Time To <span class="accent">Run</span></p>
+        <p style="margin-top:.75rem">Monroe It’s Time To Run. A summer distance-running club for athletes entering 5th–12th grade from every school, led by Coach Todd Williams.</p>
       </div>
       <div>
         <h2>Explore</h2>
@@ -131,12 +219,14 @@
       </div>
     </div>
     <div class="site-footer__legal">
-      <span>© <span id="year">2027</span> Monroe Run Club</span>
+      <span>© <span id="year">2027</span> Monroe It’s Time To Run</span>
       <span>Every mile matters.</span>
     </div>
   </div>
 </footer>
 
+<script src="assets/js/config.js"></script>
 <script src="assets/js/main.js" defer></script>
+<script src="assets/js/register.js" defer></script>
 </body>
 </html>

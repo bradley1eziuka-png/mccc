@@ -1,4 +1,4 @@
-/* Monroe Run Club — interactions. No dependencies. */
+/* Monroe It’s Time To Run — interactions. No dependencies. */
 (() => {
   const root = document.documentElement;
   root.classList.add("js");
@@ -210,24 +210,6 @@
       const cat = b.dataset.filter;
       items.forEach((i) => { i.hidden = cat !== "all" && i.dataset.cat !== cat; });
     }));
-  }
-
-  /* registration form: front-end only until the PayPal / registration flow is connected */
-  const form = document.getElementById("reg-form");
-  if (form) {
-    const status = document.getElementById("form-status");
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      if (!form.checkValidity()) { form.reportValidity(); return; }
-      // Registration data to send once the real backend exists (includes athlete T-shirt size as tshirt_size):
-      const registration = Object.fromEntries(new FormData(form)); // eslint-disable-line no-unused-vars
-      // MUST REMOVE with the preview notice below once registration + PayPal are live.
-      // TODO: Connect final PayPal / registration flow here. Collect the fields below,
-      // then hand off to the approved checkout. Do not invent a checkout URL.
-      status.hidden = false;
-      status.textContent = "Online registration is not connected yet. Nothing was submitted or charged.";
-      status.focus();
-    });
   }
 
   const y = document.getElementById("year");
