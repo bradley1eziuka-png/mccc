@@ -157,7 +157,11 @@
         form.hidden = true; document.querySelector(".rprog").hidden = true; payPanel.hidden = false; payPanel.focus(); payPanel.scrollIntoView({ block: "start" });
         return;
       }
-      if (res.status === 400 && data.fields) { setStatus(Object.values(data.fields).join(" ")); }
+      if (res.status === 409 && data.error === "already_registered") {
+        setStatus("We already have a registration for this athlete and email (reference " + data.reference + "), and it has different details than what you just entered. Your new answers were NOT saved. Please email MonroeJiuJitsu11@gmail.com with your reference so Todd can withdraw the old registration, then submit this form again.");
+      }
+      else if (res.status === 400 && data.fields) { setStatus(Object.values(data.fields).join(" ")); }
+      else if (res.status === 413) setStatus("That submission is too large. Remove the drawn signature or shorten your answers and try again.");
       else if (res.status === 429) setStatus("Too many attempts. Please wait a few minutes and try again.");
       else if (res.status === 503) setStatus("Registration is temporarily unavailable. Please email MonroeJiuJitsu11@gmail.com.");
       else setStatus("We could not save your registration. Nothing was charged. Please try again, or email MonroeJiuJitsu11@gmail.com.");

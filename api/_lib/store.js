@@ -100,6 +100,12 @@ function decrypt(str) {
   return JSON.parse(pt.toString("utf8"));
 }
 
+const normName = (s) => String(s == null ? "" : s).toLowerCase().replace(/\s+/g, " ").trim();
+/** The "one registration per athlete + parent email per season" key. Shared by /api/register and /api/admin (withdrawing a registration frees it). */
+function dedupeKey(first, last, email, season) {
+  return key("dedupe:") + crypto.createHash("sha256").update([normName(first), normName(last), normName(email), season].join("|")).digest("hex");
+}
+
 /** Constant-time check of the admin bearer token. */
 function adminOk(req) {
   const want = env().admin;
@@ -131,7 +137,13 @@ function send(res, status, body) {
 }
 
 async function readJson(req, maxBytes) {
-  if (req.body && typeof req.body === "object") return req.body;
+  // Enforce the size limit EVERY time, including when the platform has already parsed the body for us.
+  const declared = Number(req.headers && req.headers["content-length"]);
+  if (Number.isFinite(declared) && declared > maxBytes) throw new Error("too_large");
+  if (req.body && typeof req.body === "object") {
+    if (Buffer.byteLength(JSON.stringify(req.body), "utf8") > maxBytes) throw new Error("too_large");
+    return req.body;
+  }
   let raw = typeof req.body === "string" ? req.body : "";
   if (!raw) {
     const chunks = [];
@@ -143,8 +155,8 @@ async function readJson(req, maxBytes) {
     }
     raw = Buffer.concat(chunks).toString("utf8");
   }
-  if (raw.length > maxBytes) throw new Error("too_large");
+  if (Buffer.byteLength(raw, "utf8") > maxBytes) throw new Error("too_large");
   return JSON.parse(raw);
 }
 
-module.exports = { configured, pipeline, encrypt, decrypt, adminOk, clientIp, limited, send, readJson, env, registrationOpen, isProduction, environmentName, key };
+module.exports = { configured, pipeline, encrypt, decrypt, adminOk, clientIp, limited, send, readJson, env, registrationOpen, isProduction, environmentName, key, dedupeKey };

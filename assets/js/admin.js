@@ -22,21 +22,43 @@
     const { registrations, testMode, environment } = await r.json();
     markTest(testMode, environment);
     $("msg").textContent = ""; $("login").hidden = true; $("app").hidden = false;
-    $("count").textContent = registrations.length + " registration" + (registrations.length === 1 ? "" : "s") + " · " + registrations.filter((x) => x.status === "paid").length + " paid";
+    $("count").textContent = registrations.length + " registration" + (registrations.length === 1 ? "" : "s") + " · " + registrations.filter((x) => x.status === "paid").length + " paid" + (registrations.some((x) => x.status === "unreadable") ? " · " + registrations.filter((x) => x.status === "unreadable").length + " UNREADABLE" : "");
     const body = $("rows"); body.textContent = "";
     registrations.forEach((x) => {
       const tr = el("tr");
+      if (x.status === "unreadable") {
+        tr.append(el("td", {}, x.reference), el("td", { colspan: "7" }, "⚠ This registration could not be read: " + (x.paymentNote || "unknown problem") + " The other registrations are unaffected."), el("td", {}, el("span", { class: "pill pill--bad" }, "Unreadable")), el("td", {}));
+        body.append(tr);
+        return;
+      }
+      const label = x.status === "paid" ? "Paid" : x.status === "superseded" ? "Withdrawn" : "Awaiting payment";
+      const cls = x.status === "paid" ? "pill--paid" : x.status === "superseded" ? "pill--super" : "pill--pending";
       tr.append(el("td", {}, x.reference), el("td", {}, x.athleteFirst + " " + x.athleteLast), el("td", {}, x.gradeEntering), el("td", {}, x.parent),
         el("td", {}, x.email + "\n" + x.phone), el("td", {}, x.tshirtSize), el("td", {}, when(x.createdAt)),
-        el("td", {}, el("span", { class: "pill " + (x.status === "paid" ? "pill--paid" : "pill--pending") }, x.status === "paid" ? "Paid" : "Awaiting payment")));
+        el("td", {}, el("span", { class: "pill " + cls }, label)));
       const view = el("button", { class: "sm", type: "button" }, "View / waiver");
       view.onclick = () => showDetail(x.reference);
-      const pay = el("button", { class: "sm", type: "button" }, x.status === "paid" ? "Mark unpaid" : "Mark paid");
-      pay.onclick = () => togglePaid(x);
-      tr.lastChild.after(el("td", {}, view, " ", pay));
+      const actions = el("td", {}, view);
+      if (x.status !== "superseded") {
+        const pay = el("button", { class: "sm", type: "button" }, x.status === "paid" ? "Mark unpaid" : "Mark paid");
+        pay.onclick = () => togglePaid(x);
+        actions.append(" ", pay);
+      }
+      if (x.status === "pending_payment") {
+        const wd = el("button", { class: "sm", type: "button" }, "Withdraw (allow re-submit)");
+        wd.onclick = () => withdraw(x);
+        actions.append(" ", wd);
+      }
+      tr.append(actions);
       body.append(tr);
     });
     return true;
+  }
+  async function withdraw(x) {
+    if (!confirm("Withdraw " + x.reference + " (" + x.athleteFirst + " " + x.athleteLast + ")?\n\nUse this only so the parent can submit corrected details. The old signed record is kept, marked Withdrawn. Paid registrations cannot be withdrawn.")) return;
+    const r = await api("", { method: "POST", body: JSON.stringify({ reference: x.reference, action: "supersede" }) });
+    if (!r.ok) { alert("Could not withdraw this registration."); return; }
+    load();
   }
   async function togglePaid(x) {
     if (x.status === "paid") { if (!confirm("Mark " + x.reference + " as NOT paid?")) return; }
@@ -48,12 +70,14 @@
   }
   async function showDetail(ref) {
     const r = await api("?ref=" + encodeURIComponent(ref));
+    if (r.status === 422) { alert("This registration could not be read (corrupted or tampered). The other registrations are unaffected."); return; }
     if (!r.ok) return;
     const { record: g } = await r.json();
+    if (g.payment && g.payment.status === "superseded") { /* shown with a notice below */ }
     const box = $("detail"); box.hidden = false; box.textContent = "";
     const dl = (rows) => { const d = el("dl"); rows.forEach(([k, v]) => d.append(el("dt", {}, k), el("dd", {}, v == null ? "" : String(v)))); return d; };
     box.append(el("h2", { class: "display" }, g.reference + " — " + g.athlete.firstName + " " + g.athlete.lastName));
-    box.append(dl([["Status", g.payment.status === "paid" ? "Paid " + when(g.payment.paidAt) + (g.payment.transactionId ? " · PayPal txn " + g.payment.transactionId : "") : "Awaiting payment"],
+    box.append(dl([["Status", g.payment.status === "paid" ? "Paid " + when(g.payment.paidAt) + (g.payment.transactionId ? " · PayPal txn " + g.payment.transactionId : "") : g.payment.status === "superseded" ? "WITHDRAWN " + when(g.payment.supersededAt) + " (replaced by a corrected submission)" : "Awaiting payment"],
       ["Registered", when(g.createdAt)], ["Date of birth", g.athlete.dob], ["Grade entering", g.athlete.gradeEntering], ["School", g.athlete.school], ["Experience", g.athlete.experience], ["T-shirt size", g.athlete.tshirtSize],
       ["Parent / guardian", g.parent.fullName], ["Email", g.parent.email], ["Phone", g.parent.phone],
       ["Emergency contact", g.emergency.contactName + " — " + g.emergency.contactPhone], ["Medical / emergency info", g.emergency.medical]]));

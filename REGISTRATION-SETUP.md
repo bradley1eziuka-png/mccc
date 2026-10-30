@@ -74,6 +74,21 @@ Only after steps 1 to 4: set `REGISTRATION_OPEN=true` in the **Production** envi
 `registrationOpen: true` to `main`, and redeploy. To close registration again at any time, remove or change
 `REGISTRATION_OPEN` in Production and redeploy; the server then refuses every submission.
 
+## Corrections, withdrawals and limits
+
+* **Same details submitted twice:** treated as a harmless repeat. The parent gets the same reference.
+* **Different details for the same athlete + parent email:** refused. The parent sees a plain message that their new answers were
+  **not saved**, with their reference and Todd's email. Nothing is ever overwritten, so a corrected medical note can never *look*
+  saved when it is not.
+* **How a correction gets made:** open `/admin`, click **Withdraw (allow re-submit)** on the unpaid registration, then tell the
+  parent to submit the form again. The old signed record is kept (shown as *Withdrawn*); it is never deleted. Paid registrations
+  cannot be withdrawn.
+* **Nothing is cut off:** any answer over its length limit is rejected with a message (medical/emergency notes: 1,500 characters).
+* **Request size:** requests over 400 KB are refused. **Rate limits (per IP address):** 60 requests / 10 minutes and 40 new
+  registrations / hour, enough for many families on one shared network. Admin sign-in attempts: 40 / 10 minutes.
+* **Damaged records:** if one stored record is ever corrupted or tampered with, `/admin` and the CSV flag it as **Unreadable** and every
+  other registration stays available. It is never silently overwritten.
+
 ## Matching payments to registrations (important limitation)
 
 The supplied PayPal link is a **hosted payment link**. It cannot be told which athlete is paying, and
