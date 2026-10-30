@@ -6,12 +6,21 @@
   const api = (path, opts) => fetch("/api/admin" + path, { ...opts, headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, cache: "no-store" });
   const when = (iso) => (iso ? new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "");
 
+  const markTest = (isTest, env) => {
+    const b = $("testbanner");
+    b.hidden = !isTest;
+    if (isTest) { b.textContent = "TEST MODE · " + (env || "non-production") + " · test data only · not real registrations"; document.title = "[TEST] Registrations (private)"; }
+  };
+  // Which environment is this? (public, data-free) so TEST MODE shows even before login.
+  fetch("/api/admin?mode=1", { cache: "no-store" }).then((r) => r.json()).then((m) => markTest(m.testMode, m.environment)).catch(() => {});
+
   async function load() {
     const r = await api("");
     if (r.status === 401) { $("msg").textContent = "Wrong token."; return false; }
     if (r.status === 503) { $("msg").textContent = "Registration storage is not set up yet (see REGISTRATION-SETUP.md)."; return false; }
     if (!r.ok) { $("msg").textContent = "Could not load registrations."; return false; }
-    const { registrations } = await r.json();
+    const { registrations, testMode, environment } = await r.json();
+    markTest(testMode, environment);
     $("msg").textContent = ""; $("login").hidden = true; $("app").hidden = false;
     $("count").textContent = registrations.length + " registration" + (registrations.length === 1 ? "" : "s") + " · " + registrations.filter((x) => x.status === "paid").length + " paid";
     const body = $("rows"); body.textContent = "";

@@ -2,11 +2,27 @@
 
 **Current state: built, tested with fake data, and switched OFF.**
 Parents can walk through the registration steps on `/register`, but nothing is sent, saved or charged,
-and no PayPal link is shown. `/api/register` and `/api/admin` also refuse every request (HTTP 503) until
-storage is configured. Two independent switches keep it closed:
+and no PayPal link is shown. Registration is closed by **three independent switches**, all of which must be
+opened on purpose:
 
-1. `registrationOpen: false` in `assets/js/config.js` (the page).
-2. Missing environment variables on Vercel (the server).
+1. **Server switch (the real lock):** `/api/register` returns 503 unless the environment variable
+   `REGISTRATION_OPEN` is exactly `true`. It is checked first, before any data is read or stored, so a direct
+   request to the API cannot get around it. **Never set it in Production until go-live.**
+2. **Page switch:** `registrationOpen: false` in `assets/js/config.js`.
+3. **Storage variables:** without the database credentials and secrets below, the API refuses everything.
+
+## Environments (production and test are kept apart)
+
+| | Production (`VERCEL_ENV=production`) | Preview / local (everything else) |
+|---|---|---|
+| Database credentials | `KV_REST_API_URL` / `KV_REST_API_TOKEN` (set by the Upstash integration) | **Only** `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` pointing at a **separate test database** |
+| If missing | closed | closed. It never falls back to the `KV_*` (production) credentials, and refuses test credentials that match them |
+| Reference prefix | `ITR-` | `TST-` |
+| Database keys | `reg:…`, `regs`, `dedupe:…` | namespaced `test:…` |
+| Record field `environment` | `production` | `preview` / `local` |
+| Admin page | normal | red **TEST MODE** banner, CSV named `TEST-registrations.csv` |
+
+Use a **different** `REGISTRATION_ENCRYPTION_KEY` and `ADMIN_TOKEN` for testing than for production.
 
 ## How registration works once it is on
 
@@ -30,9 +46,9 @@ review the waiver and the typed/drawn e-signature process before live registrati
 particular vary by state.
 
 ### 2. Create the storage (about 5 minutes, free tier is enough)
-In the Vercel dashboard for this project: **Storage → Marketplace → "Upstash for Redis" → Create**, and connect
-it to the project. Vercel adds `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` (or `KV_REST_API_URL` /
-`KV_REST_API_TOKEN`) automatically.
+Production database: **Storage → Marketplace → "Upstash for Redis" → Create**, connected to the project's **Production**
+environment (Vercel adds `KV_REST_API_URL` / `KV_REST_API_TOKEN`). Remove Preview from that connection so previews
+never hold production database credentials.
 
 ### 3. Add two secrets (Project → Settings → Environment Variables, Production)
 | Name | Value |
@@ -44,13 +60,19 @@ it to the project. Vercel adds `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_
 registrations cannot be decrypted. Never put either value in GitHub.
 
 ### 4. Test on a Vercel preview with fake data
-Change `registrationOpen` to `true` on a branch, open the preview URL, register a fake athlete, confirm you get a
+Create a **separate** test database in the Upstash console (for example `mccc-test`). In Vercel add these as
+**Preview** variables restricted to the branch `registration-test` only: `UPSTASH_REDIS_REST_URL`,
+`UPSTASH_REDIS_REST_TOKEN` (test database), a **new** `REGISTRATION_ENCRYPTION_KEY`, a **new** `ADMIN_TOKEN`, and
+`REGISTRATION_OPEN=true`. Keep Deployment Protection on so only you can open the preview. On that branch change
+`registrationOpen` to `true`, open the preview URL, register a fake athlete, confirm you get a
 reference and the PayPal button, then open `/admin`, enter the admin token, and check the record, signed
 waiver, "Mark paid" and CSV download. Delete the test records (Upstash console, Data Browser: keys
 `reg:ITR-…` and `dedupe:…`, and remove the reference from the `regs` sorted set).
 
 ### 5. Go live
-Merge `registrationOpen: true` to `main`. Do not do this before steps 1 to 4.
+Only after steps 1 to 4: set `REGISTRATION_OPEN=true` in the **Production** environment variables, merge
+`registrationOpen: true` to `main`, and redeploy. To close registration again at any time, remove or change
+`REGISTRATION_OPEN` in Production and redeploy; the server then refuses every submission.
 
 ## Matching payments to registrations (important limitation)
 

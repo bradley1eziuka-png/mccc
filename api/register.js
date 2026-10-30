@@ -62,6 +62,8 @@ function validate(b) {
 
 module.exports = async function handler(req, res) {
   try {
+    // MASTER SWITCH: closed unless REGISTRATION_OPEN is exactly "true". Checked FIRST, before the body is read or the database is touched.
+    if (!S.registrationOpen()) return S.send(res, 503, { error: "registration_closed" });
     if (req.method !== "POST") {
       res.setHeader("Allow", "POST");
       return S.send(res, 405, { error: "method_not_allowed" });
@@ -80,7 +82,7 @@ module.exports = async function handler(req, res) {
     try { body = await S.readJson(req, MAX_BODY); } catch (e) { return S.send(res, e.message === "too_large" ? 413 : 400, { error: "bad_request" }); }
     if (!body || typeof body !== "object") return S.send(res, 400, { error: "bad_request" });
 
-    if (body.website) return S.send(res, 200, { ok: true, reference: "ITR-000000" }); // honeypot: pretend success, store nothing
+    if (body.website) return S.send(res, 200, { ok: true, reference: S.isProduction() ? "ITR-000000" : "TST-000000" }); // honeypot: pretend success, store nothing
 
     const ip = S.clientIp(req);
     if (await S.limited("reg", ip, 12, 600)) return S.send(res, 429, { error: "too_many_requests" });
@@ -89,8 +91,8 @@ module.exports = async function handler(req, res) {
     if (Object.keys(f).length) return S.send(res, 400, { error: "validation", fields: f });
 
     // De-duplicate: same athlete + parent email for this season returns the existing reference instead of a second record.
-    const dedupe = "dedupe:" + crypto.createHash("sha256").update([norm(d.athlete_first), norm(d.athlete_last), norm(d.email), SEASON].join("|")).digest("hex");
-    const reference = "ITR-" + Array.from(crypto.randomBytes(6), (b) => ALPHABET[b % ALPHABET.length]).join("");
+    const dedupe = S.key("dedupe:") + crypto.createHash("sha256").update([norm(d.athlete_first), norm(d.athlete_last), norm(d.email), SEASON].join("|")).digest("hex");
+    const reference = (S.isProduction() ? "ITR-" : "TST-") + Array.from(crypto.randomBytes(6), (b) => ALPHABET[b % ALPHABET.length]).join("");
     const [claimed] = await S.pipeline([["SET", dedupe, reference, "NX"]]);
     if (claimed !== "OK") {
       const [existing] = await S.pipeline([["GET", dedupe]]);
@@ -100,6 +102,7 @@ module.exports = async function handler(req, res) {
     const now = new Date().toISOString();
     const record = {
       reference,
+      environment: S.environmentName(), // "production" for real registrations; anything else is test data
       season: SEASON,
       createdAt: now,
       athlete: { firstName: d.athlete_first, lastName: d.athlete_last, dob: d.dob, gradeEntering: d.grade, school: d.school, experience: d.level, tshirtSize: d.tshirt_size },
@@ -119,7 +122,7 @@ module.exports = async function handler(req, res) {
       payment: { status: "unpaid", amountDue: 200, currency: "USD" },
     };
     try {
-      await S.pipeline([["SET", "reg:" + reference, S.encrypt(record)], ["ZADD", "regs", Date.now(), reference]]);
+      await S.pipeline([["SET", S.key("reg:" + reference), S.encrypt(record)], ["ZADD", S.key("regs"), Date.now(), reference]]);
     } catch (e) {
       await S.pipeline([["DEL", dedupe]]).catch(() => {});
       return S.send(res, 500, { error: "storage_failed" });

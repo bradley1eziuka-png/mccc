@@ -12,15 +12,46 @@
  *   ADMIN_TOKEN                   long random string used to open the admin page
  *
  * If any of these is missing, configured() is false and the API refuses to accept registrations.
+ *
+ * ENVIRONMENT ISOLATION (fail closed):
+ *   - Production (VERCEL_ENV=production) uses the KV_REST_API_* credentials (UPSTASH_* accepted as a fallback).
+ *   - Every other environment (preview, development, local) uses ONLY UPSTASH_REDIS_REST_URL / _TOKEN and NEVER the KV_* ones.
+ *     If those are missing, or they point at the same database as KV_*, the store is "not configured" and everything is refused.
+ *   - Non-production keys are namespaced ("test:") and references start with TST- so test data can never be confused with real data.
+ *   - Registration is also closed unless REGISTRATION_OPEN is exactly "true" (see registrationOpen()). Never set it in Production
+ *     until the legal review and a full test are done.
  */
 const crypto = require("crypto");
 
+const vercelEnv = () => process.env.VERCEL_ENV || "";
+const isProduction = () => vercelEnv() === "production";
+const environmentName = () => vercelEnv() || "local";
+const trimUrl = (u) => String(u || "").replace(/\/$/, "");
+
+/** Which database credentials this deployment may use. Never lets a non-production deployment reach the production database. */
+function dbCreds() {
+  const e = process.env;
+  if (isProduction()) {
+    return { url: e.KV_REST_API_URL || e.UPSTASH_REDIS_REST_URL || "", token: e.KV_REST_API_TOKEN || e.UPSTASH_REDIS_REST_TOKEN || "" };
+  }
+  const url = e.UPSTASH_REDIS_REST_URL || "";
+  const token = e.UPSTASH_REDIS_REST_TOKEN || "";
+  const sameAsProd = (url && e.KV_REST_API_URL && trimUrl(url) === trimUrl(e.KV_REST_API_URL)) || (token && e.KV_REST_API_TOKEN && token === e.KV_REST_API_TOKEN);
+  if (sameAsProd) return { url: "", token: "" }; // test creds that match the production DB are refused
+  return { url, token };
+}
+
 const env = () => ({
-  url: process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || "",
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || "",
+  ...dbCreds(),
   encKey: process.env.REGISTRATION_ENCRYPTION_KEY || "",
   admin: process.env.ADMIN_TOKEN || "",
 });
+
+/** Server-side master switch. Closed unless REGISTRATION_OPEN is exactly the string "true". */
+const registrationOpen = () => process.env.REGISTRATION_OPEN === "true";
+
+/** Namespaces every key outside production so test data is physically separate and obvious. */
+const key = (k) => (isProduction() ? k : "test:" + k);
 
 function encKeyBuf() {
   const k = Buffer.from(env().encKey, "base64");
@@ -86,7 +117,7 @@ function clientIp(req) {
 
 /** Simple fixed-window limiter. Returns true when the caller is OVER the limit. */
 async function limited(bucket, ip, max, windowSec) {
-  const k = "rl:" + bucket + ":" + crypto.createHash("sha256").update(ip).digest("hex").slice(0, 24);
+  const k = key("rl:" + bucket) + ":" + crypto.createHash("sha256").update(ip).digest("hex").slice(0, 24);
   const [n] = await pipeline([["INCR", k], ["EXPIRE", k, windowSec, "NX"]]);
   return Number(n) > max;
 }
@@ -116,4 +147,4 @@ async function readJson(req, maxBytes) {
   return JSON.parse(raw);
 }
 
-module.exports = { configured, pipeline, encrypt, decrypt, adminOk, clientIp, limited, send, readJson, env };
+module.exports = { configured, pipeline, encrypt, decrypt, adminOk, clientIp, limited, send, readJson, env, registrationOpen, isProduction, environmentName, key };

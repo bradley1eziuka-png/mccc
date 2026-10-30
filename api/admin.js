@@ -18,6 +18,7 @@ const csvCell = (v) => {
 function summary(r) {
   return {
     reference: r.reference,
+    environment: r.environment || "production",
     createdAt: r.createdAt,
     status: r.payment && r.payment.status === "paid" ? "paid" : "pending_payment",
     athleteFirst: r.athlete.firstName,
@@ -43,12 +44,16 @@ function summary(r) {
 }
 
 async function load(ref) {
-  const [raw] = await S.pipeline([["GET", "reg:" + ref]]);
+  const [raw] = await S.pipeline([["GET", S.key("reg:" + ref)]]);
   return raw ? S.decrypt(raw) : null;
 }
 
 module.exports = async function handler(req, res) {
   try {
+    // Public, data-free: tells the admin page which environment it is talking to so it can show TEST MODE.
+    if (req.method === "GET" && new URL(req.url, "http://x").searchParams.has("mode")) {
+      return S.send(res, 200, { testMode: !S.isProduction(), environment: S.environmentName() });
+    }
     if (!S.configured() || !S.env().admin) return S.send(res, 503, { error: "admin_unavailable" });
     if (await S.limited("admin", S.clientIp(req), 40, 600)) return S.send(res, 429, { error: "too_many_requests" });
     if (!S.adminOk(req)) return S.send(res, 401, { error: "unauthorized" });
@@ -57,14 +62,14 @@ module.exports = async function handler(req, res) {
     if (req.method === "GET") {
       const ref = url.searchParams.get("ref");
       if (ref) {
-        if (!/^ITR-[A-Z0-9]{6}$/.test(ref)) return S.send(res, 400, { error: "bad_reference" });
+        if (!/^(ITR|TST)-[A-Z0-9]{6}$/.test(ref)) return S.send(res, 400, { error: "bad_reference" });
         const r = await load(ref);
         return r ? S.send(res, 200, { record: r }) : S.send(res, 404, { error: "not_found" });
       }
-      const refs = (await S.pipeline([["ZRANGE", "regs", 0, -1, "REV"]]))[0] || [];
+      const refs = (await S.pipeline([["ZRANGE", S.key("regs"), 0, -1, "REV"]]))[0] || [];
       const rows = [];
       if (refs.length) {
-        const raws = await S.pipeline([["MGET", ...refs.map((x) => "reg:" + x)]]);
+        const raws = await S.pipeline([["MGET", ...refs.map((x) => S.key("reg:" + x))]]);
         for (const raw of raws[0] || []) if (raw) rows.push(summary(S.decrypt(raw)));
       }
       if (url.searchParams.get("format") === "csv") {
@@ -72,16 +77,16 @@ module.exports = async function handler(req, res) {
         const out = [cols.map(csvCell).join(",")].concat(rows.map((r) => cols.map((c) => csvCell(r[c])).join(","))).join("\r\n");
         res.statusCode = 200;
         res.setHeader("Content-Type", "text/csv; charset=utf-8");
-        res.setHeader("Content-Disposition", 'attachment; filename="registrations.csv"');
+        res.setHeader("Content-Disposition", 'attachment; filename="' + (S.isProduction() ? "registrations.csv" : "TEST-registrations.csv") + '"');
         res.setHeader("Cache-Control", "no-store");
         return res.end(out);
       }
-      return S.send(res, 200, { registrations: rows });
+      return S.send(res, 200, { registrations: rows, testMode: !S.isProduction(), environment: S.environmentName() });
     }
 
     if (req.method === "POST") {
       const b = await S.readJson(req, 20 * 1024);
-      if (!/^ITR-[A-Z0-9]{6}$/.test(String(b.reference || ""))) return S.send(res, 400, { error: "bad_reference" });
+      if (!/^(ITR|TST)-[A-Z0-9]{6}$/.test(String(b.reference || ""))) return S.send(res, 400, { error: "bad_reference" });
       const r = await load(b.reference);
       if (!r) return S.send(res, 404, { error: "not_found" });
       const clip = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
@@ -90,7 +95,7 @@ module.exports = async function handler(req, res) {
       } else if (b.action === "markUnpaid") {
         r.payment = { ...r.payment, status: "unpaid", paidAt: "", transactionId: "", note: clip(b.note, 300) };
       } else return S.send(res, 400, { error: "bad_action" });
-      await S.pipeline([["SET", "reg:" + r.reference, S.encrypt(r)]]);
+      await S.pipeline([["SET", S.key("reg:" + r.reference), S.encrypt(r)]]);
       return S.send(res, 200, { ok: true, registration: summary(r) });
     }
 
