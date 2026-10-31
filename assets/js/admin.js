@@ -16,7 +16,7 @@
 
   async function load() {
     const r = await api("");
-    if (r.status === 401) { $("msg").textContent = "Wrong token."; return false; }
+    if (r.status === 401) { $("msg").textContent = "Wrong password."; return false; }
     if (r.status === 503) { $("msg").textContent = "Registration storage is not set up yet (see REGISTRATION-SETUP.md)."; return false; }
     if (!r.ok) { $("msg").textContent = "Could not load registrations."; return false; }
     const { registrations, testMode, environment } = await r.json();
@@ -84,7 +84,7 @@
     const wv = el("div", { class: "wv" });
     wv.append(el("h2", { class: "display" }, "Signed waiver record"));
     wv.append(dl([["Waiver version", g.waiver.version], ["Text fingerprint (SHA-256)", g.waiver.sha256], ["Agreement accepted", g.waiver.accepted ? "Yes" : "No"],
-      ["Typed signature", g.waiver.typedSignature], ["Signed (server time)", when(g.waiver.signedAt)], ["Date shown to signer", g.waiver.signedDateShown], ["IP address", g.waiver.ip], ["Browser", g.waiver.userAgent]]));
+      ["Typed signature", g.waiver.typedSignature], ["Signed (server time)", when(g.waiver.signedAt)], ["Date shown on form (signer’s device)", g.waiver.signedDateShown], ["IP address", g.waiver.ip], ["Browser", g.waiver.userAgent]]));
     if (g.waiver.drawnSignaturePng) { wv.append(el("p", { class: "muted" }, "Drawn signature:")); wv.append(el("img", { class: "sigimg", alt: "Drawn signature", src: g.waiver.drawnSignaturePng })); }
     box.append(wv);
     try {
