@@ -848,6 +848,8 @@ body.has-sticky .site-footer { padding-bottom: 6rem; }
 @media (min-width: 900px) {
   .voices__grid .tcard:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .voices__grid .tcard:last-child:nth-child(odd) .tcard__text { max-width: 80ch; }
+  /* full-width card: one more preview line so the clamp never ends on a blank paragraph gap */
+  .js .voices__grid .tcard:last-child:nth-child(odd):not(.is-open) .tcard__text { -webkit-line-clamp: 7; }
 }
 
 /* ==========================================================================
